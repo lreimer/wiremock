@@ -23,6 +23,9 @@ import com.github.tomakehurst.wiremock.matching.RequestPattern;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import com.github.tomakehurst.wiremock.stubbing.StubMappings;
 
+import java.io.IOException;
+import java.net.URL;
+
 import static com.github.tomakehurst.wiremock.WireMockServer.FILES_ROOT;
 import static com.github.tomakehurst.wiremock.WireMockServer.MAPPINGS_ROOT;
 import static com.github.tomakehurst.wiremock.http.RequestMethod.ANY;
@@ -43,21 +46,21 @@ public class WireMockServerRunner {
         System.setProperty("org.mortbay.log.class", "com.github.tomakehurst.wiremock.jetty.LoggerAdapter");
     }
 
-	private WireMockServer wireMockServer;
-	
-	public void run(String... args) {
-		CommandLineOptions options = new CommandLineOptions(args);
-		if (options.help()) {
-			out.println(options.helpText());
-			return;
-		}
+    private WireMockServer wireMockServer;
 
-		FileSource fileSource = options.filesRoot();
-		fileSource.createIfNecessary();
-		FileSource filesFileSource = fileSource.child(FILES_ROOT);
-		filesFileSource.createIfNecessary();
-		FileSource mappingsFileSource = fileSource.child(MAPPINGS_ROOT);
-		mappingsFileSource.createIfNecessary();
+    public void run(String... args) {
+        CommandLineOptions options = new CommandLineOptions(args);
+        if (options.help()) {
+            out.println(options.helpText());
+            return;
+        }
+
+        FileSource fileSource = options.filesRoot();
+        fileSource.createIfNecessary();
+        FileSource filesFileSource = fileSource.child(FILES_ROOT);
+        filesFileSource.createIfNecessary();
+        FileSource mappingsFileSource = fileSource.child(MAPPINGS_ROOT);
+        mappingsFileSource.createIfNecessary();
 
         wireMockServer = new WireMockServer(options);
 
@@ -65,9 +68,9 @@ public class WireMockServerRunner {
             wireMockServer.enableRecordMappings(mappingsFileSource, filesFileSource);
         }
 
-		if (options.specifiesProxyUrl()) {
-			addProxyMapping(options.proxyUrl());
-		}
+        if (options.specifiesProxyUrl()) {
+            addProxyMapping(options.proxyUrl());
+        }
 
         try {
             wireMockServer.start();
@@ -79,34 +82,52 @@ public class WireMockServerRunner {
             System.exit(1);
         }
     }
-	
-	private void addProxyMapping(final String baseUrl) {
-		wireMockServer.loadMappingsUsing(new MappingsLoader() {
-			@Override
-			public void loadMappingsInto(StubMappings stubMappings) {
-				RequestPattern requestPattern = new RequestPattern(ANY);
-				requestPattern.setUrlPattern(".*");
-				ResponseDefinition responseDef = new ResponseDefinition();
-				responseDef.setProxyBaseUrl(baseUrl);
 
-				StubMapping proxyBasedMapping = new StubMapping(requestPattern, responseDef);
-				proxyBasedMapping.setPriority(10); // Make it low priority so that existing stubs will take precedence
-				stubMappings.addMapping(proxyBasedMapping);
-			}
-		});
-	}
-	
-	public void stop() {
-		wireMockServer.stop();
-	}
+    private void addProxyMapping(final String baseUrl) {
+        wireMockServer.loadMappingsUsing(new MappingsLoader() {
+            @Override
+            public void loadMappingsInto(StubMappings stubMappings) {
+                RequestPattern requestPattern = new RequestPattern(ANY);
+                requestPattern.setUrlPattern(".*");
+                ResponseDefinition responseDef = new ResponseDefinition();
+                responseDef.setProxyBaseUrl(baseUrl);
+
+                StubMapping proxyBasedMapping = new StubMapping(requestPattern, responseDef);
+                proxyBasedMapping.setPriority(10); // Make it low priority so that existing stubs will take precedence
+                stubMappings.addMapping(proxyBasedMapping);
+            }
+        });
+    }
+
+    public void stop() {
+        wireMockServer.stop();
+    }
 
     public boolean isRunning() {
         return wireMockServer.isRunning();
     }
 
-    public int port() { return wireMockServer.port(); }
+    public int port() {
+        return wireMockServer.port();
+    }
 
-	public static void main(String... args) {
-		new WireMockServerRunner().run(args);
-	}
+    public static void main(String... args) {
+        new WireMockServerRunner().run(args);
+    }
+
+    public static void shutdown(String... args) {
+        CommandLineOptions options = new CommandLineOptions(args);
+        if (options.help()) {
+            out.println(options.helpText());
+            return;
+        }
+
+        String shutdownUrl = String.format("http://%s:%s/__admin/shutdown", "localhost", options.portNumber());
+        try {
+            new URL(shutdownUrl).openStream();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+    }
 }
