@@ -16,12 +16,13 @@
 package com.github.tomakehurst.wiremock.http;
 
 import com.github.tomakehurst.wiremock.common.Json;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import static com.github.tomakehurst.wiremock.http.HttpHeader.httpHeader;
 import static com.github.tomakehurst.wiremock.testsupport.WireMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 
 public class HttpHeadersTest {
 
@@ -52,17 +53,18 @@ public class HttpHeadersTest {
 
         HttpHeaders copyOfHeaders = HttpHeaders.copyOf(httpHeaders);
 
-        assertThat(copyOfHeaders.all(), hasItems(
+        Matcher<Iterable<HttpHeader>> hasItems = hasItems(
                 header("Header-1", "h1v1"),
                 header("Header-1", "h1v2"),
                 header("Header-2", "h2v1"),
-                header("Header-2", "h2v2")));
+                header("Header-2", "h2v2"));
+        assertThat(copyOfHeaders.all(), hasItems);
     }
 
     private static final String SINGLE_VALUE_HEADER =
             "{                	    	    		        \n" +
-            "	\"Header-1\": \"only-value\"                \n" +
-            "}                                               ";
+                    "	\"Header-1\": \"only-value\"                \n" +
+                    "}                                               ";
 
     @Test
     public void correctlyDeserializesWithSingleValueHeader() {
@@ -86,15 +88,15 @@ public class HttpHeadersTest {
 
     private static final String MULTI_VALUE_HEADER =
             "{    	                         	    		        \n" +
-            "		    \"Header-1\": [                             \n" +
-            "		        \"value-1\",                            \n" +
-            "               \"value-2\"                             \n" +
-            "           ],                                          \n" +
-            "		    \"Header-2\": [                             \n" +
-            "		        \"value-3\",                            \n" +
-            "               \"value-4\"                             \n" +
-            "           ]                                           \n" +
-            "}                                                        ";
+                    "		    \"Header-1\": [                             \n" +
+                    "		        \"value-1\",                            \n" +
+                    "               \"value-2\"                             \n" +
+                    "           ],                                          \n" +
+                    "		    \"Header-2\": [                             \n" +
+                    "		        \"value-3\",                            \n" +
+                    "               \"value-4\"                             \n" +
+                    "           ]                                           \n" +
+                    "}                                                        ";
 
     @SuppressWarnings("unchecked")
     @Test

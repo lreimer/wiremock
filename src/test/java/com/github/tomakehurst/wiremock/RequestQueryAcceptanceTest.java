@@ -68,7 +68,8 @@ public class RequestQueryAcceptanceTest extends AcceptanceTestBase {
         List<LoggedRequest> requests = findAll(putRequestedFor(urlMatching(".*return/this.*")));
 
         assertThat(requests.size(), is(2));
-        assertThat(requests, hasItems(withUrl("/should/return/this/request"), withUrl("/also/return/this")));
+        Matcher<Iterable<LoggedRequest>> hasItems = hasItems(withUrl("/should/return/this/request"), withUrl("/also/return/this"));
+        assertThat(requests, hasItems);
     }
 
     @Test

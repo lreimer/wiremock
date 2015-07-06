@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
@@ -44,6 +45,7 @@ public class ValuePatternTest {
 	public void init() {
 		valuePattern = new ValuePattern();
         context = new Mockery();
+        Locale.setDefault(Locale.ENGLISH);
 	}
 
     @After

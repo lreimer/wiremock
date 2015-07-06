@@ -15,8 +15,10 @@
  */
 package com.github.tomakehurst.wiremock.client;
 
+import com.github.tomakehurst.wiremock.http.HttpHeader;
 import com.github.tomakehurst.wiremock.matching.ValuePattern;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import static com.github.tomakehurst.wiremock.http.RequestMethod.POST;
@@ -99,10 +101,11 @@ public class MappingBuilderTest {
 				.withHeader("Content-Type", "text/xml")
 				.withHeader("Encoding", "UTF-8"))
 			.build();
-		
-		assertThat(mapping.getResponse().getHeaders().all(), hasItems(
+
+        Matcher<Iterable<HttpHeader>> hasItems = hasItems(
                 header("Content-Type", "text/xml"),
-                header("Encoding", "UTF-8")));
+                header("Encoding", "UTF-8"));
+        assertThat(mapping.getResponse().getHeaders().all(), hasItems);
 	}
 
 	private ValuePattern headerEqualTo(String value) {

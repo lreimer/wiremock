@@ -15,15 +15,14 @@
  */
 package com.github.tomakehurst.wiremock.common;
 
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.testsupport.WireMatchers.fileNamed;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ClasspathFileSourceTest {
 
@@ -36,7 +35,8 @@ public class ClasspathFileSourceTest {
 
         List<TextFile> files = classpathFileSource.listFilesRecursively();
 
-        assertThat(files, hasItems(fileNamed("pom.properties"), fileNamed("pom.xml")));
+        Matcher<Iterable<TextFile>> hasItems = hasItems(fileNamed("pom.properties"), fileNamed("pom.xml"));
+        assertThat(files, hasItems);
     }
 
     @SuppressWarnings("unchecked")
@@ -46,13 +46,14 @@ public class ClasspathFileSourceTest {
 
         List<TextFile> files = classpathFileSource.listFilesRecursively();
 
-        assertThat(files, hasItems(
+        Matcher<Iterable<TextFile>> hasItems = hasItems(
                 fileNamed("one"),
                 fileNamed("two"),
                 fileNamed("three"),
                 fileNamed("four"),
                 fileNamed("five"),
-                fileNamed("six")));
+                fileNamed("six"));
+        assertThat(files, hasItems);
     }
 
     @Test
